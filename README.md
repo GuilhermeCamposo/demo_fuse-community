@@ -1,6 +1,6 @@
 # Fuse Community Example
 
-## How to Run
+Example on how to use Camel to consume messages from queues using transaction.
 
 ### how to run locally
     mvn clean spring-boot:run
