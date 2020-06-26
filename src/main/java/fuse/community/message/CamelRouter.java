@@ -17,8 +17,16 @@ public class CamelRouter extends RouteBuilder {
     @Value("${sleep.time}")
     private long sleepTime;
 
+    int messageCounter = 0;
+
     @Override
     public void configure() throws Exception {
+        
+        timerRoute();
+        consumerRoute();
+    }
+
+    private void restConfig(){
         restConfiguration()
                 .apiContextPath("/api-doc")
                 .apiProperty("api.title", "Post Message REST API")
@@ -28,16 +36,31 @@ public class CamelRouter extends RouteBuilder {
                 .apiProperty("api.path", "/")
                 .apiProperty("host", "")
                 .apiContextRouteId("doc-api")
-            .component("servlet")
-            .bindingMode(RestBindingMode.json);
-        
-        rest("/message").description("Post message to queue")
-            .post()
-            .route().routeId("message-api")
-            .inOnly("amq:test.queue")
-            .log("message sent to queue")
-            .setBody(constant("message sent"));
+                .component("servlet")
+                .bindingMode(RestBindingMode.json);
+    }
 
+    private void restRoute(){
+        rest("/message").description("Post message to queue")
+                .post()
+                .route().routeId("message-api")
+                .inOnly("amq:test.queue")
+                .log("message sent to queue. OK")
+                .setBody(constant("message sent"));
+    }
+
+    private void timerRoute(){
+        from("timer://myTimer")
+                .routeId("message-sender")
+                .process(exchange -> {
+                    messageCounter++;
+                    exchange.getIn().setBody("message number ("+ messageCounter + ")");
+                })
+                .to("amq:test.queue")
+                .log("message sent");
+    }
+
+    private void consumerRoute(){
         from("amq:test.queue").routeId("jms-route")
                 .transacted()
                 .log("got message")
