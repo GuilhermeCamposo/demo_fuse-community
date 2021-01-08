@@ -8,8 +8,13 @@ Example on how to use Camel to consume messages from queues using transaction.
 ### To deploy in Openshift
     mvn clean package -Popenshift fabric8:deploy
 
-### Manually Deploy 
-    oc new-build java --name=fuse-community --binary=true
-    oc new-app fuse-community
+### Deploy Manually  
 
-    oc start-build fuse-community --from-file=*.jar
+#### Create the build
+    oc new-build java:8 --name=fuse-community --binary=true
+ 
+#### Build the image
+    oc start-build fuse-community --from-file=fuse-community-1.0.0.jar
+
+#### Create the deployment
+    oc new-app fuse-community
